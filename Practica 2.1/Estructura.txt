@@ -1,3 +1,0 @@
--carpetas: practica 2.1, practica 2.2, etc.
--ejercicios: ejercicio1.cc, ejercicio2.cc, etc.
--apartados de ejercicios: carpeta como ejercicio1 y archivos como ejercicio1_1.cc, ejercicio1_2.cc, etc.

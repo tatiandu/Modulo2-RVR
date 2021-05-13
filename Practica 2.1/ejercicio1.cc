@@ -10,7 +10,7 @@
 //  struct sockaddr *ai_addr;	/* Socket address for socket. */
 //  struct addrinfo *ai_next;	/* Pointer to next in list. */
 
-int main(int argx, char** argv) {
+int main(int argc, char** argv) {
     struct addrinfo hints;
     struct addrinfo* res;
 
