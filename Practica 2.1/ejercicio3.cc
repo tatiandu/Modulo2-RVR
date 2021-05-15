@@ -24,8 +24,9 @@ int main(int argc, char** argv) {
 
     memset((void*) &hints, 0, sizeof(struct addrinfo));
 
+    hints.ai_flags    = AI_PASSIVE; //Devolver 0.0.0.0
     hints.ai_family = AF_INET; //Para IPv4
-    hints.ai_socktype = SOCK_DGRAM; //Para todo tipo de sockets
+    hints.ai_socktype = SOCK_DGRAM; //Para UDP
 
     int returnCode = getaddrinfo(argv[1], argv[2], &hints, &res);
     if (returnCode != 0) {
