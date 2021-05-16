@@ -7,15 +7,14 @@
 
 //No hace falta hacer bind porque es el cliente
 
-//Ej.: ./time_client 127.0.0.1 3000 t
+//Ej.: ./echo_client 127.0.0.1 2222
 //argv 1 = IP
 //argv 2 = Puerto
-//argv 3 = Comando
 
 int main(int argc, char** argv) {
 
-    if(argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " host port command(t/d/q)\n";
+    if(argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " host port\n";
         return 0;
     }
 
@@ -26,7 +25,7 @@ int main(int argc, char** argv) {
 
     hints.ai_flags    = AI_PASSIVE; //Devolver 0.0.0.0
     hints.ai_family = AF_INET; //Para IPv4
-    hints.ai_socktype = SOCK_DGRAM; //Para UDP
+    hints.ai_socktype = SOCK_STREAM; //Para TCP
 
     int returnCode = getaddrinfo(argv[1], argv[2], &hints, &res);
     if (returnCode != 0) {
@@ -40,25 +39,29 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    int len = 80;
-    char buffer[len];
-    struct sockaddr server = *res->ai_addr;
-    socklen_t serverLen = sizeof(struct sockaddr);
+    if (connect(sd, res->ai_addr, res->ai_addrlen) == -1) {
+        std::cerr << "Error [connect]\n";
+        return -1;
+    }
 
     freeaddrinfo(res); //Liberar
 
-    //Enviar comando al servidor
-    sendto(sd, argv[3], sizeof(char), 0, &server, serverLen);
+    while (!exit)
+    {
+        int len = 80;
+		char buffer[len];
 
-    //Recibir respuesta del servidor
-    int bytes = recvfrom(sd, (void*)buffer, len-1, 0, &server, &serverLen);
-    if (bytes == -1) {
-        std::cerr << "Error [recvfrom]\n";
-        return -1;
+        std::cin >> buffer;
+        if (buffer[0] == 'Q' && strlen(buffer) == 2) {
+            break;
+        }
+
+        send(sd, buffer, sizeof(buffer), 0);
+        int bytes = recv(sd, (void*)buffer, len-1, 0);
+
+        buffer[bytes] = '\0';
+        std::cout << buffer << '\n';
     }
-    buffer[bytes] = '\0';
-    std::cout << buffer << '\n';
-
     close(sd); //Cerrar socket
 
     return 0;

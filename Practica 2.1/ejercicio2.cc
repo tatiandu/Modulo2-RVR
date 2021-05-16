@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     freeaddrinfo(res); //Liberar
 
     bool exit = false;
-    while(!exit)
+    while (!exit)
     {
         int len = 80;
         char buffer[len];
