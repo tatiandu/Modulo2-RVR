@@ -24,7 +24,6 @@ int main(int argc, char** argv) {
 
     memset((void*) &hints, 0, sizeof(struct addrinfo));
 
-    hints.ai_flags    = AI_PASSIVE; //Devolver 0.0.0.0
     hints.ai_family = AF_INET; //Para IPv4
     hints.ai_socktype = SOCK_DGRAM; //Para UDP
 
@@ -50,15 +49,17 @@ int main(int argc, char** argv) {
     //Enviar comando al servidor
     sendto(sd, argv[3], sizeof(char), 0, &server, serverLen);
 
-    //Recibir respuesta del servidor
-    int bytes = recvfrom(sd, (void*)buffer, len-1, 0, &server, &serverLen);
-    if (bytes == -1) {
-        std::cerr << "Error [recvfrom]\n";
-        return -1;
-    }
-    buffer[bytes] = '\0';
-    std::cout << buffer << '\n';
+    if (argv[3][0] != 'q') { 
+        //Recibir respuesta del servidor si no quiere salir
+        int bytes = recvfrom(sd, (void*)buffer, len-1, 0, &server, &serverLen);
+        if (bytes == -1) {
+            std::cerr << "Error [recvfrom]\n";
+            return -1;
+        }
+        buffer[bytes] = '\0';
 
+        std::cout << buffer << '\n';
+    }
     close(sd); //Cerrar socket
 
     return 0;

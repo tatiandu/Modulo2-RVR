@@ -23,7 +23,6 @@ int main(int argc, char** argv) {
 
     memset((void*) &hints, 0, sizeof(struct addrinfo));
 
-    hints.ai_flags    = AI_PASSIVE; //Devolver 0.0.0.0
     hints.ai_family = AF_INET; //Para IPv4
     hints.ai_socktype = SOCK_STREAM; //Para TCP
 
@@ -46,20 +45,22 @@ int main(int argc, char** argv) {
 
     freeaddrinfo(res); //Liberar
 
-    while (!exit)
+    while (true)
     {
         int len = 80;
 		char buffer[len];
 
         std::cin >> buffer;
-        if (buffer[0] == 'Q' && strlen(buffer) == 2) {
+        int bufferLen = strlen(buffer);
+        buffer[bufferLen] = '\0';
+
+        if (buffer[0] == 'Q' && buffer[1] == '\0') {
             break;
         }
 
-        send(sd, buffer, sizeof(buffer), 0);
+        send(sd, buffer, bufferLen, 0);
         int bytes = recv(sd, (void*)buffer, len-1, 0);
 
-        buffer[bytes] = '\0';
         std::cout << buffer << '\n';
     }
     close(sd); //Cerrar socket
