@@ -62,27 +62,26 @@ int main(int argc, char** argv) {
         struct tm* timeInfo;
         size_t bytesSend;
 
+        time(&rawtime);
+        timeInfo = localtime(&rawtime);
+
         switch(buffer[0]) {
             case 't':
-                time(&rawtime);
-                timeInfo = localtime(&rawtime);
                 bytesSend = strftime(reply, sizeof(reply), "%I:%M:%S %p", timeInfo);
                 sendto(sd, reply, bytesSend, 0, &cliente, clienteLen);
                 break;
 
             case 'd':
-                time(&rawtime);
-                timeInfo = localtime(&rawtime);
                 bytesSend = strftime(reply, sizeof(reply), "%F", timeInfo);
                 sendto(sd, reply, bytesSend, 0, &cliente, clienteLen);
                 break;
 
-            case 'q': //Envia un mensaje vacio
+            case 'q':
                 exit = true;
                 std::cout << "Saliendo...\n";
                 break;
 
-            default: //Envia un mensaje vacio
+            default:
                 std::cout << "Comando no soportado " << buffer[0] << '\n';
                 break;
         }
