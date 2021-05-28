@@ -46,6 +46,10 @@ public:
         return 0;
     }
 
+    void info() {
+        std::cout << "Player: " << name << "  X: " << pos_x << "  Y: " << pos_y << '\n';
+    }
+
 private:
     static const size_t MAX_NAME = 20;
     char name[MAX_NAME];
@@ -57,7 +61,7 @@ private:
 int main(int argc, char **argv)
 {
     Jugador one_r("", 0, 0);
-    Jugador one_w("PlayerEj2", 465, 16);
+    Jugador one_w("PlayerEj3", 80, 962);
 
     int fd = open("./data_jugador", O_CREAT | O_TRUNC | O_RDWR, 0666);
     if(fd == -1) {
@@ -73,6 +77,24 @@ int main(int argc, char **argv)
         std::cout << "[Error] write.\n";
         return -1;
     }
+
+    fd = open("./data_jugador", O_RDONLY);
+    if(fd == -1) {
+        std::cout << "[Error] file open.\n";
+        return -1;
+    }
+
+    //Leer de un fichero y deserializar en one_r
+    char* buffer = (char*)malloc(one_w.size());
+    bytes = read(fd, buffer, one_w.size());
+    close(fd);
+    if (bytes == -1) {
+        std::cout << "[Error] read.\n";
+        return -1;
+    }
+    one_r.from_bin(buffer);
+
+    one_r.info(); //Mostar one_r
 
     return 0;
 }
