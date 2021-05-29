@@ -22,7 +22,6 @@ int ChatMessage::from_bin(char * bobj)
     alloc_data(MESSAGE_SIZE);
     memcpy(static_cast<void *>(_data), bobj, MESSAGE_SIZE);
 
-    //Reconstruir la clase usando el buffer _data
     char *tmp = _data;
 
     memcpy(&type, tmp, sizeof(uint8_t));
@@ -41,16 +40,31 @@ void ChatServer::do_messages()
 {
     while (true)
     {
-        /*
-         * NOTA: los clientes están definidos con "smart pointers", es necesario
-         * crear un unique_ptr con el objeto socket recibido y usar std::move
-         * para añadirlo al vector
-         */
+        ChatMessage msg;
+        Socket *client = new Socket(socket);
+        socket.recv(msg, client);
 
-        //Recibir Mensajes en y en función del tipo de mensaje
-        // - LOGIN: Añadir al vector clients
-        // - LOGOUT: Eliminar del vector clients
-        // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
+        if (msg.type == 0) { //LOGIN
+            std::unique_ptr<Socket> ptrClient(client);
+            clients.push_back(std::move(ptrClient));
+        }
+        else if (msg.type == 1) { //MESSAGE
+            for (auto it = clients.begin(); it != clients.end(); it++) {
+                if (!(**it == *client))
+                    socket.send(msg, **it);
+            }
+        }
+        else if (msg.type == 2) { //LOGOUT
+            auto it = clients.begin();
+            while (it != clients.end()) {
+                if (**it == *client) {
+                    it = clients.erase(it);
+                    break;
+                }
+                else ++it;
+            }
+            std::cout << "[LOGOUT]: " << msg.nick << '\n';
+        }
     }
 }
 
@@ -69,15 +83,25 @@ void ChatClient::login()
 
 void ChatClient::logout()
 {
-    // Completar
+    std::string msg;
+
+    ChatMessage em(nick, msg);
+    em.type = ChatMessage::LOGOUT;
+
+    socket.send(em, socket);
 }
 
 void ChatClient::input_thread()
 {
     while (true)
     {
-        // Leer stdin con std::getline
-        // Enviar al servidor usando socket
+        std::string msg;
+        std::getline(std::cin, msg);
+
+        ChatMessage em(nick, msg);
+        em.type = ChatMessage::MESSAGE;
+
+        socket.send(em, socket);
     }
 }
 
@@ -85,8 +109,12 @@ void ChatClient::net_thread()
 {
     while(true)
     {
-        //Recibir Mensajes de red
-        //Mostrar en pantalla el mensaje de la forma "nick: mensaje"
+        ChatMessage em;
+        socket.recv(em);
+
+        if (em.nick != nick) { //Para no leer nuestros mensajes
+            std::cout << em.nick << ": " << em.message << '\n';
+        }
     }
 }
 
