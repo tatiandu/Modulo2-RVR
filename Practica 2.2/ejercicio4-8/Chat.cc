@@ -44,26 +44,27 @@ void ChatServer::do_messages()
         Socket *client = new Socket(socket);
         socket.recv(msg, client);
 
+        std::unique_ptr<Socket> ptrClient(client);
+
         if (msg.type == 0) { //LOGIN
-            std::unique_ptr<Socket> ptrClient(client);
             clients.push_back(std::move(ptrClient));
         }
         else if (msg.type == 1) { //MESSAGE
-            for (auto it = clients.begin(); it != clients.end(); it++) {
-                if (!(**it == *client))
+            for (auto it = clients.begin(); it != clients.end(); ++it) {
+                if (!(**it == *ptrClient))
                     socket.send(msg, **it);
             }
         }
         else if (msg.type == 2) { //LOGOUT
             auto it = clients.begin();
             while (it != clients.end()) {
-                if (**it == *client) {
+                if (**it == *ptrClient) {
                     it = clients.erase(it);
+                    std::cout << "[LOGOUT]: " << msg.nick << '\n';
                     break;
                 }
                 else ++it;
             }
-            std::cout << "[LOGOUT]: " << msg.nick << '\n';
         }
     }
 }
@@ -112,7 +113,7 @@ void ChatClient::net_thread()
         ChatMessage em;
         socket.recv(em);
 
-        if (em.nick != nick) { //Para no leer nuestros mensajes
+        if (em.nick != nick && em.nick != "") { //Para no mostrar mensajes propios
             std::cout << em.nick << ": " << em.message << '\n';
         }
     }

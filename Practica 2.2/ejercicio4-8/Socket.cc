@@ -31,6 +31,12 @@ Socket::Socket(const char * address, const char * port):sd(-1)
     freeaddrinfo(res); //Liberar
 }
 
+Socket::Socket(struct sockaddr * _sa, socklen_t _sa_len):sd(-1), sa(*_sa), sa_len(_sa_len)
+{
+    sd = socket(AF_INET, SOCK_DGRAM, 0);
+    bind();
+}
+
 int Socket::recv(Serializable &obj, Socket * &sock)
 {
     struct sockaddr sa;
